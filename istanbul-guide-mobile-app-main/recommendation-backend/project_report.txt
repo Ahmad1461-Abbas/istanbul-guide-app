@@ -1,0 +1,100 @@
+# Istanbul Guided Recommendation System - Project Report
+
+## 1. Project Overview
+- **Name:** Istanbul Guided Recommendation System
+- **Purpose:** AI-driven travel recommendation engine for Istanbul (places/events) using user interests + historic data.
+- **Key outputs:** recommendations list (name, category, score, explanation), itinerary generation, rating + feedback integration.
+
+---
+
+## 2. Architecture
+
+1. **Backends**
+   - `api/app.py`: FastAPI REST API (port 8000)
+   - `web/app.py`: Flask web frontend (port 5000)
+2. **Core logic**
+   - `recommendation/recommender.py`
+   - `llm/explanation_generator.py`
+3. **Data**
+   - `data/places.json`, `data/events.json`
+4. **DB**
+   - `database/db_connection.py` (SQLite)
+   - rating + visited + LLM cache tables
+5. **Frontend**
+   - `web/templates/base.html`, `recommendations.html`, `itinerary.html`
+   - scoped UI, no "profile" menu (removed per request)
+
+---
+
+## 3. Recommendation Engine
+
+- TF-IDF vectorization (tags + description)
+- Cosine similarity vs user interest vector
+- Hybrid score:
+  - 70% similarity
+  - 30% rating
+- Support:
+  - exclude visited
+  - search by category, min rating
+  - dynamic shuffle for variety
+
+---
+
+## 4. Explanation System
+
+- `llm/explanation_generator.py`
+- Primary: OpenAI GPT calls (prompt with category-specific rules)
+- Fallback
+  - local rules (`generate_ai_explanation()`)
+  - deterministic for stable tests
+- Caching: 1h TTL in DB to reduce calls
+- New stricter prompt:
+  - categories: food, mosque/religious, cultural, tour, nature
+  - 2-3 sentences, 2 features, emotional tone, no "matches your interest"
+
+---
+
+## 5. Quality / Testing
+
+- `tests/test_recommendation_system.py`
+  - recommendation scoring
+  - user profile and rating interaction
+  - db operations
+  - explanation caching + deterministic fallback
+- `pytest` output: all tests passing after updates
+
+---
+
+## 6. Current runtime status
+
+- API running OK at `localhost:8000`
+- Web interface running OK at `localhost:5000`
+- Command tested:
+  - `curl -X POST http://localhost:8000/recommendations ...`
+  - Output includes:
+    - `name`, `category`, `hybrid_score`
+    - explanation text (fallback style working)
+
+---
+
+## 7. Notes & next steps
+
+- **Quota issue**: openai key currently may have insufficient quota, fallback now correct.
+- **Live model output if quota OK**: richer, purposeful phrases.
+- **Extras implemented**:
+  - navigation menu cleaned (no profile)
+  - caching + deterministic wording
+  - explanation uniqueness check in API
+
+---
+
+## 8. Recommendation
+
+- Add a proper `.env` OpenAI key + billing credits.
+- Run full UI flow and confirm explanation text style.
+- (Optional) Add e2e test with sample user input / HTML output.
+
+---
+
+## 9. "Run" done (evidence)
+- query provided by user executed successfully and confirms production pipeline is live.

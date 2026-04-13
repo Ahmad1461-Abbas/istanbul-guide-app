@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Itinerary - Istanbul Guide{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h2 class="text-white text-center mb-4">
+            <i class="fas fa-calendar me-2"></i>Custom Itinerary Generator
+        </h2>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form id="itineraryForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="interests" class="form-label">Your Interests</label>
+                            <input type="text" class="form-control" id="interests"
+                                   placeholder="history, culture, food" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="days" class="form-label">Number of Days</label>
+                            <select class="form-control" id="days" required>
+                                <option value="1">1 Day</option>
+                                <option value="2">2 Days</option>
+                                <option value="3" selected>3 Days</option>
+                                <option value="4">4 Days</option>
+                                <option value="5">5 Days</option>
+                                <option value="6">6 Days</option>
+                                <option value="7">7 Days</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-magic me-1"></i>Generate
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="itineraryResult" class="mt-4" style="display: none;">
+            <h4 class="text-white mb-3">
+                <i class="fas fa-route me-2"></i>Your Custom Itinerary
+            </h4>
+
+            <div class="card">
+                <div class="card-body">
+                    <div id="itineraryContent">
+                        <!-- Itinerary will be inserted here -->
+                    </div>
+
+                    <div class="mt-3">
+                        <button id="exportBtn" class="btn btn-success">
+                            <i class="fas fa-download me-1"></i>Export Itinerary
+                        </button>
+                        <button id="shareBtn" class="btn btn-info ms-2">
+                            <i class="fas fa-share me-1"></i>Share Itinerary
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('itineraryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const interests = document.getElementById('interests').value.split(',').map(i => i.trim());
+    const days = parseInt(document.getElementById('days').value);
+
+    try {
+        const response = await fetch('/api/itinerary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ interests: interests, days: days })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayItinerary(data.itinerary, days, interests);
+        } else {
+            alert('Error generating itinerary');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error generating itinerary');
+    }
+});
+
+function displayItinerary(itinerary, days, interests) {
+    const container = document.getElementById('itineraryContent');
+    container.innerHTML = `
+        <div class="alert alert-info">
+            <strong>${days}-Day Itinerary</strong> based on your interests: ${interests.join(', ')}
+        </div>
+    `;
+
+    for (const [day, activities] of Object.entries(itinerary)) {
+        const dayCard = `
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-day me-2"></i>${day}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    ${activities.length > 0 ?
+                        activities.map(activity => `
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    <span class="badge bg-secondary">${activity.time}</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">${activity.activity}</h6>
+                                    <p class="mb-0 text-muted">${activity.description}</p>
+                                </div>
+                            </div>
+                        `).join('') :
+                        '<p class="text-muted">No activities planned for this day.</p>'
+                    }
+                </div>
+            </div>
+        `;
+        container.innerHTML += dayCard;
+    }
+
+    document.getElementById('itineraryResult').style.display = 'block';
+}
+
+document.getElementById('exportBtn').addEventListener('click', function() {
+    const content = document.getElementById('itineraryContent').innerText;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'istanbul-itinerary.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById('shareBtn').addEventListener('click', function() {
+    const content = document.getElementById('itineraryContent').innerText;
+    const shareData = {
+        title: 'My Istanbul Itinerary',
+        text: content.substring(0, 100) + '...',
+        url: window.location.href
+    };
+
+    if (navigator.share) {
+        navigator.share(shareData);
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(content).then(() => {
+            alert('Itinerary copied to clipboard!');
+        });
+    }
+});
+</script>
+{% endblock %}

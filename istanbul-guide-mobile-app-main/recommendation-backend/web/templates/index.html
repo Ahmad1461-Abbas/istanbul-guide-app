@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Istanbul Guided Recommendations{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center text-white">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="fas fa-mosque me-3"></i>
+            Discover Istanbul
+        </h1>
+        <p class="lead mb-5">
+            Your AI-powered guide to the best places and experiences in Istanbul.
+            Get personalized recommendations based on your interests.
+        </p>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center text-dark">
+                        <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title text-primary">AI-Powered</h5>
+                        <p class="card-text">Smart recommendations using cosine similarity algorithms</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center text-dark">
+                        <i class="fas fa-comments fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title text-primary">LLM Explanations</h5>
+                        <p class="card-text">Detailed explanations for why each place is recommended</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center text-dark">
+                        <i class="fas fa-calendar fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title text-primary">Custom Itineraries</h5>
+                        <p class="card-text">Generate personalized day-by-day travel plans</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="/recommendations" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-compass me-2"></i>Get Started
+        </a>
+    </div>
+</div>
+{% endblock %}
