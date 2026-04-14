@@ -7,22 +7,54 @@ export interface RecommendationResult {
     hybrid_score: number;
 }
 
-const API_BASE_URL = "http://192.168.1.107:8000"; // Using your computer's actual network IP
+const GEMINI_API_KEY = "AIzaSyCaddkY1fxvjTeL4p11TPxxqpSdXBg6IcE";
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export async function getRecommendations(interests: string[]): Promise<RecommendationResult[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/recommendations`, {
+        const placesContext = historicalPlaces.map(p => `- ${p.title} (${p.category}): ${p.description}`).join("\n");
+        const userInterests = interests.length > 0 ? interests.join(", ") : "general tourism, landmarks, popular spots";
+        
+        const prompt = `You are a local Istanbul guide. Your task is to recommend up to 10 places from the provided list based on the user's interests.
+
+Places List:
+${placesContext}
+
+User Interests: ${userInterests}
+
+Please return the results STRICTLY as a JSON array of objects. Do not use any markdown formatting like \`\`\`json. Each object MUST have the following structure:
+- "name": string (Must exactly match the title of the place from the Places List)
+- "category": string (The category of the place)
+- "explanation": string (A short, 1-2 sentence engaging explanation of why this place matches their specific interests)
+- "hybrid_score": number (A score between 0.0 and 5.0 indicating how well it matches)
+`;
+
+        const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ interests, limit: 10, exclude_visited: false })
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.7,
+                }
+            })
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch recommendations: ${response.status}`);
+            throw new Error(`Failed to fetch recommendations from Gemini: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.recommendations;
+        const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!candidate) {
+             throw new Error("No valid response from Gemini");
+        }
+        
+        const jsonText = candidate.replace(/```json\n?|```/g, '').trim();
+        const parsedRecommendations: RecommendationResult[] = JSON.parse(jsonText);
+        
+        return parsedRecommendations;
     } catch (error) {
         console.warn("Falling back to local data with mock explanations:", error);
 

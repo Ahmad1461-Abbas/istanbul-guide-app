@@ -3,7 +3,7 @@ import { MapItem } from "../types/map";
 
 // Replace this with your laptop's current local IP.
 // Use the same network your phone is on.
-const API_BASE_URL = "http://192.168.1.108:3000";
+const API_BASE_URL = "http://192.168.1.107:3000";
 
 export async function getHistoricalPlaces(): Promise<MapItem[]> {
     try {

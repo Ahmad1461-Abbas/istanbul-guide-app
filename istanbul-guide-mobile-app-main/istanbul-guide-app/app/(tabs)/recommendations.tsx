@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -26,22 +26,22 @@ export default function RecommendationsScreen() {
 
   const toggleInterest = (interest: string) => {
     if (interests.includes(interest)) {
-      setInterests((prev) => prev.filter((i) => i !== interest));
+      setInterests((prev: string[]) => prev.filter((i: string) => i !== interest));
     } else {
-      setInterests((prev) => [...prev, interest]);
+      setInterests((prev: string[]) => [...prev, interest]);
     }
   };
 
   const addCustomInterest = () => {
     const trimmed = interestInput.trim();
     if (trimmed && !interests.includes(trimmed)) {
-      setInterests((prev) => [...prev, trimmed]);
+      setInterests((prev: string[]) => [...prev, trimmed]);
     }
     setInterestInput("");
   };
 
   const removeInterest = (interest: string) => {
-    setInterests((prev) => prev.filter((i) => i !== interest));
+    setInterests((prev: string[]) => prev.filter((i: string) => i !== interest));
   };
 
   const fetchRecommendations = async () => {
@@ -100,7 +100,7 @@ export default function RecommendationsScreen() {
 
           {interests.length > 0 && (
              <View style={styles.selectedInterestsWrap}>
-                 {interests.map((item) => (
+                 {interests.map((item: string) => (
                     <TouchableOpacity key={item} style={styles.activeInterestChip} onPress={() => removeInterest(item)}>
                         <Text style={styles.activeInterestText}>{item}</Text>
                         <Ionicons name="close-circle" size={16} color="#ffffff" style={{marginLeft: 4}}/>
@@ -158,7 +158,7 @@ export default function RecommendationsScreen() {
             <Text style={styles.emptyText}>No recommendations found for those interests.</Text>
           </View>
         ) : (
-          recommendations.map((item, index) => (
+          recommendations.map((item: RecommendationResult, index: number) => (
             <TouchableOpacity
               key={index}
               style={styles.placeCard}
